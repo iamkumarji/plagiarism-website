@@ -1,0 +1,81 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}Document History - EduWrite{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">
+            <i class="fas fa-history text-primary me-2"></i>Document History
+        </h2>
+        <p class="text-muted">View all your analyzed documents</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4">
+            {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>AI Score</th>
+                                <th>Plagiarism Score</th>
+                                <th>Word Count</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'analysis_result' doc.id %}">
+                                            {{ doc.title|truncatechars:50 }}
+                                        </a>
+                                    </td>
+                                    <td>{{ doc.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if doc.analysis %}
+                                            <span class="badge {% if doc.analysis.ai_score < 30 %}bg-success{% elif doc.analysis.ai_score < 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ doc.analysis.ai_score|floatformat:0 }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.analysis %}
+                                            <span class="badge {% if doc.analysis.plagiarism_score < 20 %}bg-success{% elif doc.analysis.plagiarism_score < 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ doc.analysis.plagiarism_score|floatformat:0 }}%
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ doc.original_text|wordcount }}</td>
+                                    <td>
+                                        <a href="{% url 'analysis_result' doc.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No documents found.</p>
+                    <a href="{% url 'analyze' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Analyze Your First Text
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

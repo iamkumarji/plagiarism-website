@@ -1,0 +1,656 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}Analysis Results - {{ document.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item active">Analysis Results</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold">
+            <i class="fas fa-chart-bar text-primary me-2"></i>{{ document.title }}
+        </h2>
+        <p class="text-muted">Analyzed on {{ analysis.analyzed_at|date:"F d, Y at g:i A" }}</p>
+    </div>
+</div>
+
+<!-- Score Summary -->
+<div class="row mb-5">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5 class="mb-3">
+                <i class="fas fa-robot text-primary me-2"></i>AI Detection Score
+            </h5>
+            <div class="text-center mb-3">
+                <div class="score-circle {% if analysis.ai_score < 30 %}score-low{% elif analysis.ai_score < 60 %}score-medium{% else %}score-high{% endif %}">
+                    {{ analysis.ai_score|floatformat:0 }}%
+                </div>
+            </div>
+            <p class="text-center text-muted mb-0">
+                {% if analysis.ai_score < 30 %}
+                    <i class="fas fa-check-circle text-success me-1"></i>
+                    This text appears to be human-written.
+                {% elif analysis.ai_score < 60 %}
+                    <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                    This text has some AI-like patterns.
+                {% else %}
+                    <i class="fas fa-times-circle text-danger me-1"></i>
+                    This text shows strong AI indicators.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5 class="mb-3">
+                <i class="fas fa-copy text-primary me-2"></i>Plagiarism Score
+            </h5>
+            <div class="text-center mb-3">
+                <div class="score-circle {% if analysis.plagiarism_score < 20 %}score-low{% elif analysis.plagiarism_score < 50 %}score-medium{% else %}score-high{% endif %}">
+                    {{ analysis.plagiarism_score|floatformat:0 }}%
+                </div>
+            </div>
+            <p class="text-center text-muted mb-0">
+                {% if analysis.plagiarism_score < 20 %}
+                    <i class="fas fa-check-circle text-success me-1"></i>
+                    Low similarity to common sources.
+                {% elif analysis.plagiarism_score < 50 %}
+                    <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                    Some common phrases detected.
+                {% else %}
+                    <i class="fas fa-times-circle text-danger me-1"></i>
+                    High similarity detected.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- AI Detection Details -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-microscope text-primary me-2"></i>AI Detection Details
+            </h5>
+
+            {% if ai_details.indicators %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Indicators Found:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for indicator in ai_details.indicators %}
+                            <span class="indicator-badge bg-{{ indicator.severity }}">
+                                {{ indicator.type }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if ai_details.statistical_features %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Statistical Analysis:</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Sentence Uniformity</span>
+                                    <span>{{ ai_details.statistical_features.sentence_uniformity|floatformat:0 }}%</span>
+                                </div>
+                                <div class="progress progress-bar-custom">
+                                    <div class="progress-bar {% if ai_details.statistical_features.sentence_uniformity > 70 %}bg-warning{% else %}bg-success{% endif %}"
+                                         style="width: {{ ai_details.statistical_features.sentence_uniformity }}%"></div>
+                                </div>
+                                <small class="text-muted">Lower is more human-like</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Burstiness</span>
+                                    <span>{{ ai_details.statistical_features.burstiness|floatformat:0 }}%</span>
+                                </div>
+                                <div class="progress progress-bar-custom">
+                                    <div class="progress-bar {% if ai_details.statistical_features.burstiness < 30 %}bg-warning{% else %}bg-success{% endif %}"
+                                         style="width: {{ ai_details.statistical_features.burstiness }}%"></div>
+                                </div>
+                                <small class="text-muted">Higher is more human-like</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Vocabulary Richness</span>
+                                    <span>{{ ai_details.statistical_features.vocabulary_richness|floatformat:2 }}</span>
+                                </div>
+                                <div class="progress progress-bar-custom">
+                                    <div class="progress-bar bg-info"
+                                         style="width: {% widthratio ai_details.statistical_features.vocabulary_richness 1 100 %}%"></div>
+                                </div>
+                                <small class="text-muted">Higher indicates more diverse vocabulary</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Transition Density</span>
+                                    <span>{{ ai_details.statistical_features.transition_density|floatformat:1 }}%</span>
+                                </div>
+                                <div class="progress progress-bar-custom">
+                                    <div class="progress-bar {% if ai_details.statistical_features.transition_density > 3 %}bg-warning{% else %}bg-success{% endif %}"
+                                         style="width: {% widthratio ai_details.statistical_features.transition_density 10 100 %}%"></div>
+                                </div>
+                                <small class="text-muted">Lower is more natural</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if ai_details.explanation %}
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-2"></i>What This Means:</h6>
+                    {% for exp in ai_details.explanation %}
+                        <p class="mb-1">{{ exp }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Writing Suggestions -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-lightbulb text-primary me-2"></i>Writing Suggestions
+            </h5>
+
+            {% if humanize_suggestions.suggestions %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Sentence-Level Suggestions:</h6>
+                    {% for suggestion in humanize_suggestions.suggestions %}
+                        <div class="suggestion-card p-3 mb-3 rounded">
+                            <div class="mb-2">
+                                <strong>Original:</strong>
+                                <span class="text-muted">"{{ suggestion.original|truncatechars:150 }}"</span>
+                            </div>
+                            {% if suggestion.improved %}
+                                <div class="mb-2">
+                                    <strong class="text-success">Suggested:</strong>
+                                    <span>"{{ suggestion.improved|truncatechars:150 }}"</span>
+                                </div>
+                            {% endif %}
+                            {% for s in suggestion.suggestions %}
+                                <div class="small">
+                                    <span class="badge bg-secondary">{{ s.issue }}</span>
+                                    <span class="text-muted ms-2">{{ s.explanation }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if humanize_suggestions.general_tips %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">General Writing Tips:</h6>
+                    <div class="row">
+                        {% for tip in humanize_suggestions.general_tips %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100 p-3 bg-light">
+                                    <h6 class="text-primary">{{ tip.title }}</h6>
+                                    <p class="small mb-2">{{ tip.tip }}</p>
+                                    {% if tip.example %}
+                                        <div class="small text-muted bg-white p-2 rounded">
+                                            <strong>Example:</strong><br>
+                                            {{ tip.example|linebreaksbr }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if humanize_suggestions.before_after_examples %}
+                <div class="mb-4">
+                    <h6 class="text-muted mb-3">Before & After Examples:</h6>
+                    {% for example in humanize_suggestions.before_after_examples %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-danger fw-bold">BEFORE:</small>
+                                        <p class="mb-0">{{ example.before|truncatechars:200 }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-success fw-bold">AFTER:</small>
+                                        <p class="mb-0">{{ example.after|truncatechars:200 }}</p>
+                                    </div>
+                                </div>
+                                <hr>
+                                <small class="text-muted">{{ example.explanation }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Sentence-by-Sentence Breakdown -->
+{% if sentence_breakdown %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-search-plus text-primary me-2"></i>Sentence-by-Sentence Analysis
+                <small class="text-muted ms-2">(Learn what makes each sentence sound AI or human)</small>
+            </h5>
+
+            <div class="accordion" id="sentenceAccordion">
+                {% for item in sentence_breakdown %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#sentence{{ item.index }}">
+                            <span class="me-3">
+                                {% if item.assessment == 'strongly_ai' %}
+                                    <span class="badge bg-danger">AI-like</span>
+                                {% elif item.assessment == 'slightly_ai' %}
+                                    <span class="badge bg-warning">Some AI patterns</span>
+                                {% elif item.assessment == 'strongly_human' %}
+                                    <span class="badge bg-success">Human</span>
+                                {% elif item.assessment == 'slightly_human' %}
+                                    <span class="badge bg-info">Good</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Neutral</span>
+                                {% endif %}
+                            </span>
+                            <span class="text-truncate" style="max-width: 500px;">
+                                Sentence {{ item.index }}: "{{ item.sentence|truncatechars:60 }}"
+                            </span>
+                            <span class="ms-auto me-3 small text-muted">{{ item.word_count }} words</span>
+                        </button>
+                    </h2>
+                    <div id="sentence{{ item.index }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                         data-bs-parent="#sentenceAccordion">
+                        <div class="accordion-body">
+                            <div class="mb-3 p-3 bg-light rounded">
+                                <strong>Full sentence:</strong>
+                                <p class="mb-0 mt-2">"{{ item.sentence }}"</p>
+                            </div>
+
+                            <div class="row">
+                                {% if item.ai_indicators %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-danger"><i class="fas fa-robot me-2"></i>AI Indicators Found:</h6>
+                                    {% for indicator in item.ai_indicators %}
+                                    <div class="alert alert-danger py-2 mb-2">
+                                        <strong>{{ indicator.type }}:</strong> {{ indicator.detail }}
+                                        <br>
+                                        <small class="text-success"><i class="fas fa-lightbulb me-1"></i>Fix: {{ indicator.fix }}</small>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                {% if item.human_indicators %}
+                                <div class="col-md-6 mb-3">
+                                    <h6 class="text-success"><i class="fas fa-user me-2"></i>Human Elements Found:</h6>
+                                    {% for indicator in item.human_indicators %}
+                                    <div class="alert alert-success py-2 mb-2">
+                                        <strong>{{ indicator.type }}:</strong> {{ indicator.detail }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+
+                                {% if not item.ai_indicators and not item.human_indicators %}
+                                <div class="col-12">
+                                    <p class="text-muted">This sentence is neutral - no strong AI or human indicators detected.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Interactive Writing Exercises -->
+{% if writing_exercises %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4 border-primary">
+            <h5 class="mb-4">
+                <i class="fas fa-dumbbell text-primary me-2"></i>Practice Exercises
+                <small class="text-muted ms-2">(Based on YOUR text - practice improving it!)</small>
+            </h5>
+
+            <div class="row">
+                {% for exercise in writing_exercises %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>{{ exercise.title }}</strong>
+                            <span class="badge {% if exercise.difficulty == 'Easy' %}bg-success{% elif exercise.difficulty == 'Medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                                {{ exercise.difficulty }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted mb-3">{{ exercise.instruction }}</p>
+
+                            <div class="bg-light p-3 rounded mb-3">
+                                <small class="text-muted d-block mb-1">Original:</small>
+                                <p class="mb-0 small">"{{ exercise.original_sentence|truncatechars:150 }}"</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block mb-1">Hints:</small>
+                                <ul class="small mb-0">
+                                    {% for hint in exercise.hints %}
+                                    <li>{{ hint }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small text-primary">Your rewrite:</label>
+                                <textarea class="form-control form-control-sm" rows="3"
+                                          placeholder="Try rewriting the sentence here..."
+                                          id="exercise_{{ exercise.id }}"></textarea>
+                            </div>
+
+                            <button class="btn btn-sm btn-outline-primary" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#example_{{ exercise.id }}">
+                                <i class="fas fa-eye me-1"></i>Show Example
+                            </button>
+
+                            <div class="collapse mt-2" id="example_{{ exercise.id }}">
+                                <div class="alert alert-info mb-0 small">
+                                    <strong>Example:</strong><br>
+                                    {{ exercise.example_rewrite }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-graduation-cap me-1"></i>
+                                <strong>Learning goal:</strong> {{ exercise.learning_goal }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Learning Points -->
+{% if humanize_suggestions.learning_points %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-graduation-cap text-primary me-2"></i>Key Learning Points
+            </h5>
+            <div class="row">
+                {% for point in humanize_suggestions.learning_points %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 p-3 border-primary">
+                            <h6 class="text-primary">{{ point.concept }}</h6>
+                            <p class="small">{{ point.explanation }}</p>
+                            <div class="mt-auto">
+                                <span class="badge bg-primary">Exercise:</span>
+                                <small class="text-muted">{{ point.exercise }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Full Humanized Version -->
+{% if humanize_suggestions.full_humanized_text %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4 border-success">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-magic text-success me-2"></i>Complete Humanized Version
+                </h5>
+                <span class="badge bg-success fs-6">
+                    <i class="fas fa-check-circle me-1"></i>Example for Learning
+                </span>
+            </div>
+
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Learn by Example:</strong> Below is your entire text rewritten in a more human-like style.
+                Study this version to understand how natural writing flows. You can re-analyze this text to verify
+                it scores lower on AI detection!
+            </div>
+
+            <!-- Changes Made Summary -->
+            {% if humanize_suggestions.humanization_changes %}
+            <div class="mb-4">
+                <h6 class="text-muted mb-3">
+                    <i class="fas fa-exchange-alt me-2"></i>Changes Made ({{ humanize_suggestions.humanization_changes|length }} modifications):
+                </h6>
+                <div class="row">
+                    {% for change in humanize_suggestions.humanization_changes %}
+                    <div class="col-md-6 mb-2">
+                        <div class="d-flex align-items-start p-2 bg-light rounded">
+                            {% if change.type == 'phrase_replacement' %}
+                                <span class="badge bg-info me-2">Phrase</span>
+                            {% elif change.type == 'transition_replacement' %}
+                                <span class="badge bg-warning me-2">Transition</span>
+                            {% elif change.type == 'filler_removal' %}
+                                <span class="badge bg-danger me-2">Filler</span>
+                            {% elif change.type == 'variety_addition' %}
+                                <span class="badge bg-primary me-2">Variety</span>
+                            {% elif change.type == 'sentence_split' %}
+                                <span class="badge bg-secondary me-2">Split</span>
+                            {% elif change.type == 'question_addition' %}
+                                <span class="badge bg-success me-2">Question</span>
+                            {% else %}
+                                <span class="badge bg-dark me-2">Other</span>
+                            {% endif %}
+                            <div class="small">
+                                <span class="text-decoration-line-through text-danger">{{ change.original|truncatechars:30 }}</span>
+                                <i class="fas fa-arrow-right mx-1 text-muted"></i>
+                                <span class="text-success fw-bold">{{ change.replacement|truncatechars:30 }}</span>
+                                <br>
+                                <small class="text-muted">{{ change.reason }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Side-by-Side Comparison -->
+            <div class="mb-4">
+                <h6 class="text-muted mb-3">
+                    <i class="fas fa-columns me-2"></i>Side-by-Side Comparison:
+                </h6>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-danger text-white">
+                                <i class="fas fa-robot me-2"></i>Original (AI-like)
+                            </div>
+                            <div class="card-body bg-light" style="max-height: 300px; overflow-y: auto;">
+                                <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">{{ document.original_text }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header bg-success text-white">
+                                <i class="fas fa-user me-2"></i>Humanized Version
+                            </div>
+                            <div class="card-body bg-light" style="max-height: 300px; overflow-y: auto;">
+                                <pre style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">{{ humanize_suggestions.full_humanized_text }}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Copy Button and Re-analyze -->
+            <div class="d-flex gap-3 flex-wrap">
+                <button class="btn btn-success" onclick="copyHumanizedText()">
+                    <i class="fas fa-copy me-2"></i>Copy Humanized Text
+                </button>
+                <button class="btn btn-outline-primary" onclick="reanalyzeHumanized()">
+                    <i class="fas fa-search me-2"></i>Re-Analyze Humanized Version
+                </button>
+                <a href="{% url 'learning' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-graduation-cap me-2"></i>Learn More Tips
+                </a>
+            </div>
+
+            <!-- Hidden textarea for copying -->
+            <textarea id="humanizedTextContent" style="position: absolute; left: -9999px;">{{ humanize_suggestions.full_humanized_text }}</textarea>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Original Text -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-3">
+                <i class="fas fa-file-alt text-primary me-2"></i>Original Text
+            </h5>
+            <div class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">
+                <pre style="white-space: pre-wrap; font-family: inherit;">{{ document.original_text }}</pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <a href="{% url 'analyze' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Analyze Another Text
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-home me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function copyHumanizedText() {
+    const textArea = document.getElementById('humanizedTextContent');
+    textArea.style.position = 'fixed';
+    textArea.style.left = '0';
+    textArea.style.top = '0';
+    textArea.style.opacity = '0';
+    textArea.select();
+
+    try {
+        navigator.clipboard.writeText(textArea.value).then(function() {
+            showToast('Humanized text copied to clipboard!', 'success');
+        }).catch(function() {
+            // Fallback for older browsers
+            document.execCommand('copy');
+            showToast('Humanized text copied to clipboard!', 'success');
+        });
+    } catch (err) {
+        showToast('Failed to copy text', 'danger');
+    }
+
+    textArea.style.position = 'absolute';
+    textArea.style.left = '-9999px';
+}
+
+function reanalyzeHumanized() {
+    const humanizedText = document.getElementById('humanizedTextContent').value;
+
+    // Create a form and submit it to the analyze page
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "analyze" %}';
+
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+
+    const titleInput = document.createElement('input');
+    titleInput.type = 'hidden';
+    titleInput.name = 'title';
+    titleInput.value = '{{ document.title }} (Humanized)';
+    form.appendChild(titleInput);
+
+    const textInput = document.createElement('textarea');
+    textInput.name = 'text';
+    textInput.value = humanizedText;
+    textInput.style.display = 'none';
+    form.appendChild(textInput);
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function showToast(message, type) {
+    // Create toast container if it doesn't exist
+    let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = 'toast-' + Date.now();
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type} border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
+    toast.show();
+
+    // Remove toast after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        toastElement.remove();
+    });
+}
+</script>
+{% endblock %}

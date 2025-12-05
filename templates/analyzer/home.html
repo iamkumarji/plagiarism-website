@@ -1,0 +1,141 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}EduWrite - Learn Better Writing{% endblock %}
+
+{% block content %}
+<div class="row align-items-center min-vh-75">
+    <div class="col-lg-6 mb-5 mb-lg-0">
+        <h1 class="display-4 fw-bold mb-4">
+            Learn to Write
+            <span class="text-primary">Authentically</span>
+        </h1>
+        <p class="lead text-muted mb-4">
+            EduWrite helps students understand writing patterns and develop their unique voice.
+            Analyze your text, learn why certain phrases sound generic, and discover how to express
+            ideas in your own words.
+        </p>
+        <div class="d-flex gap-3">
+            {% if user.is_authenticated %}
+                <a href="{% url 'analyze' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>Start Analyzing
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Get Started
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <div class="row text-center">
+                <div class="col-4">
+                    <div class="score-circle score-low mb-3">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h6>Plagiarism Check</h6>
+                </div>
+                <div class="col-4">
+                    <div class="score-circle score-medium mb-3">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h6>AI Detection</h6>
+                </div>
+                <div class="col-4">
+                    <div class="score-circle score-high mb-3">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h6>Writing Tips</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5">
+    <div class="col-12 text-center mb-5">
+        <h2 class="fw-bold">How It Works</h2>
+        <p class="text-muted">Three simple steps to better writing</p>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-primary mb-3">1</div>
+            <h5>Submit Your Text</h5>
+            <p class="text-muted">
+                Paste your essay, assignment, or any text you want to analyze.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-primary mb-3">2</div>
+            <h5>Get Analysis</h5>
+            <p class="text-muted">
+                See plagiarism scores, AI detection results, and detailed breakdowns.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-primary mb-3">3</div>
+            <h5>Learn & Improve</h5>
+            <p class="text-muted">
+                Understand why certain phrases get flagged and how to write more naturally.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5 pt-5">
+    <div class="col-12 text-center mb-5">
+        <h2 class="fw-bold">Educational Focus</h2>
+        <p class="text-muted">Not just detection - real learning</p>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5><i class="fas fa-book-open text-primary me-2"></i>Understand Patterns</h5>
+            <p class="text-muted mb-0">
+                Learn why AI-generated text sounds different from human writing.
+                Understand sentence structure, vocabulary choices, and writing rhythm.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5><i class="fas fa-pen text-primary me-2"></i>Rewriting Suggestions</h5>
+            <p class="text-muted mb-0">
+                See multiple ways to express the same idea. "This sentence could also
+                be written as..." helps you find your voice.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5><i class="fas fa-chart-line text-primary me-2"></i>Track Progress</h5>
+            <p class="text-muted mb-0">
+                See your improvement over time. Watch your writing become more
+                natural and authentic with practice.
+            </p>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 p-4">
+            <h5><i class="fas fa-shield-alt text-primary me-2"></i>Safe Learning</h5>
+            <p class="text-muted mb-0">
+                Designed for university computer labs. Learn in a controlled
+                environment with institutional oversight.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}Learning Center - EduWrite{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">
+            <i class="fas fa-graduation-cap text-primary me-2"></i>Learning Center
+        </h2>
+        <p class="text-muted">Improve your writing skills with tips and exercises</p>
+    </div>
+</div>
+
+<!-- Progress Overview -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <h6 class="text-muted mb-3">Your Progress</h6>
+            <div class="display-4 text-primary mb-2">{{ progress.total_documents }}</div>
+            <p class="mb-0">Documents Analyzed</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <h6 class="text-muted mb-3">Average AI Score</h6>
+            <div class="display-4 {% if progress.average_ai_score < 30 %}text-success{% elif progress.average_ai_score < 60 %}text-warning{% else %}text-danger{% endif %} mb-2">
+                {{ progress.average_ai_score|floatformat:0 }}%
+            </div>
+            <p class="mb-0">
+                {% if progress.average_ai_score < 30 %}
+                    Great! Your writing sounds human.
+                {% elif progress.average_ai_score < 60 %}
+                    Room for improvement.
+                {% else %}
+                    Focus on making your writing more natural.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <h6 class="text-muted mb-3">Improvement Trend</h6>
+            {% if progress.improvement_trend > 5 %}
+                <div class="display-4 text-success mb-2">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <p class="mb-0">You're improving!</p>
+            {% elif progress.improvement_trend < -5 %}
+                <div class="display-4 text-danger mb-2">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <p class="mb-0">Keep practicing!</p>
+            {% else %}
+                <div class="display-4 text-info mb-2">
+                    <i class="fas fa-equals"></i>
+                </div>
+                <p class="mb-0">Staying steady</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Writing Tips -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-lightbulb text-warning me-2"></i>Key Writing Tips
+            </h5>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 p-3 bg-light">
+                        <h6 class="text-primary">
+                            <i class="fas fa-random me-2"></i>Vary Your Sentences
+                        </h6>
+                        <p class="small mb-2">
+                            Mix short punchy sentences with longer ones. This creates rhythm.
+                            AI tends to produce uniform sentence lengths.
+                        </p>
+                        <div class="bg-white p-2 rounded small">
+                            <strong>Try:</strong> "The data speaks. Patterns emerge from the chaos -
+                            growth, decline, the steady pulse of change that numbers can't hide."
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 p-3 bg-light">
+                        <h6 class="text-primary">
+                            <i class="fas fa-user me-2"></i>Be Personal
+                        </h6>
+                        <p class="small mb-2">
+                            Use "I think" or "In my experience" when appropriate.
+                            Share your perspective. AI can't have genuine experiences.
+                        </p>
+                        <div class="bg-white p-2 rounded small">
+                            <strong>Instead of:</strong> "It is widely believed that..."<br>
+                            <strong>Try:</strong> "I've noticed that..." or "From what I've seen..."
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 p-3 bg-light">
+                        <h6 class="text-primary">
+                            <i class="fas fa-comments me-2"></i>Write Like You Talk
+                        </h6>
+                        <p class="small mb-2">
+                            Read your writing aloud. If it sounds stiff, rewrite it.
+                            Natural speech has contractions, questions, and personality.
+                        </p>
+                        <div class="bg-white p-2 rounded small">
+                            <strong>Instead of:</strong> "Furthermore, it is important to note..."<br>
+                            <strong>Try:</strong> "Here's another thing to consider..."
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100 p-3 bg-light">
+                        <h6 class="text-primary">
+                            <i class="fas fa-bolt me-2"></i>Add Energy
+                        </h6>
+                        <p class="small mb-2">
+                            Use active voice. Start some sentences with verbs.
+                            Ask questions. Let your curiosity show.
+                        </p>
+                        <div class="bg-white p-2 rounded small">
+                            <strong>Instead of:</strong> "The experiment was conducted..."<br>
+                            <strong>Try:</strong> "We ran the experiment and found..."
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Common Mistakes -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-exclamation-triangle text-danger me-2"></i>Common AI-Like Patterns to Avoid
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Why It's Flagged</th>
+                            <th>Better Alternative</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Furthermore, moreover, additionally</code></td>
+                            <td>AI overuses formal transitions</td>
+                            <td>Also, plus, and, another point is</td>
+                        </tr>
+                        <tr>
+                            <td><code>It is important to note that...</code></td>
+                            <td>Filler phrase that adds no meaning</td>
+                            <td>Note that... / Remember... / Key point:</td>
+                        </tr>
+                        <tr>
+                            <td><code>In conclusion, to summarize...</code></td>
+                            <td>Overused, predictable endings</td>
+                            <td>So what does this mean? / The takeaway is...</td>
+                        </tr>
+                        <tr>
+                            <td><code>Plays a crucial/vital role</code></td>
+                            <td>Generic phrase AI loves</td>
+                            <td>Is essential for... / Matters because...</td>
+                        </tr>
+                        <tr>
+                            <td><code>It can be argued that...</code></td>
+                            <td>Passive, non-committal</td>
+                            <td>I'd argue that... / Evidence suggests...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exercises -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-dumbbell text-success me-2"></i>Practice Exercises
+            </h5>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 p-3 border-success">
+                        <h6>Exercise 1: Sentence Variety</h6>
+                        <p class="small text-muted">
+                            Write a paragraph with exactly 5 sentences:
+                            one with 5 words, one with 10, one with 15,
+                            one with 20, and one with 8.
+                        </p>
+                        <span class="badge bg-success">Rhythm Practice</span>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 p-3 border-success">
+                        <h6>Exercise 2: Personal Voice</h6>
+                        <p class="small text-muted">
+                            Take a Wikipedia paragraph and rewrite it as if
+                            you're explaining it to a friend. Use "I" and
+                            ask at least one question.
+                        </p>
+                        <span class="badge bg-success">Voice Practice</span>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 p-3 border-success">
+                        <h6>Exercise 3: No Transitions</h6>
+                        <p class="small text-muted">
+                            Write 200 words without using: however, furthermore,
+                            moreover, additionally, consequently, therefore.
+                        </p>
+                        <span class="badge bg-success">Natural Flow</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Analyses -->
+{% if recent_analyses %}
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-history text-primary me-2"></i>Your Recent Analyses
+            </h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>AI Score</th>
+                            <th>Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for analysis in recent_analyses %}
+                            <tr>
+                                <td>{{ analysis.document.title|truncatechars:40 }}</td>
+                                <td>
+                                    <span class="badge {% if analysis.ai_score < 30 %}bg-success{% elif analysis.ai_score < 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ analysis.ai_score|floatformat:0 }}%
+                                    </span>
+                                </td>
+                                <td>{{ analysis.analyzed_at|date:"M d" }}</td>
+                                <td>
+                                    <a href="{% url 'analysis_result' analysis.document.id %}" class="btn btn-sm btn-outline-primary">
+                                        Review
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

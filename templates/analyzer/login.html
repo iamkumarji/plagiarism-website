@@ -1,0 +1,48 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}Login - EduWrite{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card p-4">
+            <h3 class="text-center mb-4">
+                <i class="fas fa-sign-in-alt text-primary me-2"></i>Login
+            </h3>
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger">
+                        Invalid username or password. Please try again.
+                    </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control" id="id_username"
+                           required autofocus placeholder="Enter your username">
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password" class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" id="id_password"
+                           required placeholder="Enter your password">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 mb-3">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+            </form>
+
+            <hr>
+
+            <p class="text-center text-muted mb-0">
+                Don't have an account?
+                <a href="{% url 'register' %}">Register here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'analyzer/base.html' %}
+
+{% block title %}Dashboard - EduWrite{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="fw-bold">
+            <i class="fas fa-home text-primary me-2"></i>Welcome, {{ user.username }}!
+        </h2>
+        <p class="text-muted">Track your writing progress and analyze new documents.</p>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-primary mb-2">{{ total_documents }}</div>
+            <p class="text-muted mb-0">Documents Analyzed</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-warning mb-2">{{ progress.average_ai_score|floatformat:0 }}%</div>
+            <p class="text-muted mb-0">Avg AI Score</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 p-4 text-center">
+            <div class="display-4 text-success mb-2">{{ progress.average_plagiarism_score|floatformat:0 }}%</div>
+            <p class="text-muted mb-0">Avg Plagiarism Score</p>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card h-100 p-4 text-center">
+            {% if progress.improvement_trend > 0 %}
+                <div class="display-4 text-success mb-2">
+                    <i class="fas fa-arrow-up"></i>
+                </div>
+                <p class="text-muted mb-0">Improving!</p>
+            {% elif progress.improvement_trend < 0 %}
+                <div class="display-4 text-danger mb-2">
+                    <i class="fas fa-arrow-down"></i>
+                </div>
+                <p class="text-muted mb-0">Keep Practicing</p>
+            {% else %}
+                <div class="display-4 text-info mb-2">
+                    <i class="fas fa-minus"></i>
+                </div>
+                <p class="text-muted mb-0">Steady</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <a href="{% url 'analyze' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Analyze New Text
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card p-4">
+            <h5 class="mb-4">
+                <i class="fas fa-history text-primary me-2"></i>Recent Documents
+            </h5>
+
+            {% if documents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>AI Score</th>
+                                <th>Plagiarism Score</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documents %}
+                                <tr>
+                                    <td>{{ doc.title|truncatechars:40 }}</td>
+                                    <td>{{ doc.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if doc.analysis %}
+                                            <span class="badge {% if doc.analysis.ai_score < 30 %}bg-success{% elif doc.analysis.ai_score < 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ doc.analysis.ai_score|floatformat:0 }}%
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if doc.analysis %}
+                                            <span class="badge {% if doc.analysis.plagiarism_score < 20 %}bg-success{% elif doc.analysis.plagiarism_score < 50 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ doc.analysis.plagiarism_score|floatformat:0 }}%
+                                            </span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'analysis_result' doc.id %}" class="btn btn-sm btn-outline-primary">
+                                            View Results
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if documents.count > 10 %}
+                    <a href="{% url 'history' %}" class="btn btn-outline-primary">
+                        View All Documents
+                    </a>
+                {% endif %}
+            {% else %}
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <p>No documents analyzed yet.</p>
+                    <a href="{% url 'analyze' %}" class="btn btn-primary">
+                        Analyze Your First Text
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
